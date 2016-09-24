@@ -1,3 +1,5 @@
+# Running a program is like playing a game
+
 I made a game-like model of a running program as two "players", and structured
 the communication between them using dependent types (rather than deciding on a
 single js-like type for messages).
