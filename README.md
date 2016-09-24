@@ -24,7 +24,7 @@ Players can tie, and both actions are recorded.
 
 Given a (computable, total) strategy for choosing your next moves and a way to
 answer questions, and these rules, this generates a stream of moves that may
-not terminate. the system is turing complete because you can implement a
+not terminate. The system is turing complete because you can implement a
 universal turing machine as one of the players.
 
 The idea is that each player acts like a freely running concurrent process who
