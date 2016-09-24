@@ -7,15 +7,15 @@ single js-like type for messages).
 There are two players, A and B. Either one can represent a program while the
 other represents the computer or a human user.
 
-The rules are, each player is asked to decide on a move to do in the future and
-when. the decision is based on the history of moves so far, but not on the
+The rules are: each player is asked to decide on a move to do in the future and
+when. The decision is based on the history of moves so far, but not on the
 other players planned move, which is hidden.
 
 Each can plan to "tell" a command, "resign" which ends the game, or "ask" a
 question which the other player has to answer.
 
 Whoever decides the prior time has his move recorded (potentially getting an
-answer to a question in the process). and both players must recalculate their
+answer to a question in the process). And both players must recalculate their
 plan using the latest history.
 
 The player who lost the race potentially changes his mind about what to do next.
