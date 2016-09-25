@@ -83,14 +83,4 @@ mutual
 play : Ord (T w) => Game w -> FullHistory w
 play g = go g (strategyA g Nil) (strategyB g Nil) Nil
 
--- example
-World0 : World
-World0 = MkWorld Nat (const Unit) (const Unit) (\_ => (\_ => Unit))
-
-game0 : Game World0
-game0 = MkGame strA strB ansA ansB where
-  strA h = (0, Tell ())
-  strB h = (0, Tell ())
-  ansA h q = ()
-  ansB h q = ()
 
