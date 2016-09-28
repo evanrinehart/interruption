@@ -23,16 +23,16 @@ data Action : {w : World pl} -> Type -> Type where
   AskAt    : (p' : pl) -> {w : World pl} -> t -> Que p' -> Action t
 
 ||| The moves that can appear in the move list entries.
-data Move : {w : World pl} -> pl -> Type where
-  Resign : (p : pl) -> Move {w} p
-  Tell : (p : pl) -> {w : World pl} -> Cmd p -> Move {w} p
-  Ask : (p : pl) -> (p' : pl) -> {w : World pl} -> (q : Que p') -> Ans p' q -> Move {w} p
+data Move : (w : World pl) -> pl -> Type where
+  Resign : (p : pl) -> Move w p
+  Tell : (p : pl) -> {w : World pl} -> Cmd p -> Move w p
+  Ask : (p : pl) -> (p' : pl) -> {w : World pl} -> (q : Que p') -> Ans p' q -> Move w p
 
 ||| An entry is the move time and a collection of (player, move) pairs.
 |||
-||| Entry w t = (t, p:playerTy ** Move p)
+||| Entry w t = (t, p:playerTy ** Move w p)
 Entry : {pl : Type} -> World pl -> Type -> Type
-Entry {pl} w t = (t, (p : pl ** Move {pl} {w} p))
+Entry {pl} w t = (t, (p : pl ** Move {pl} w p))
 
 ||| A finite prefix of the move list.
 |||
