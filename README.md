@@ -1,39 +1,20 @@
-# Running a program is like playing a game
+# Interruption
 
-I made a game-like model of a running program as two "players", and structured
-the communication between them using dependent types (rather than deciding on a
-single js-like type for messages).
+This game is usually played with 2 or more players. But you need at least 1.
 
-There are two players, A and B. Either one can represent a program while the
-other represents the computer or a human user.
+Before the game starts define for each player a type of commands, a type of
+questions, and for each question of each player a type of answers.
 
-The rules are: each player is asked to decide on a move to do in the future and
-when. The decision is based on the history of moves so far, but not on the
-other players planned move, which is hidden.
+Each round all players are asked to choose an action. When the round is over
+one or more players will append their moves to a move list. The move list
+begins empty prior to the first round. Players may review the move list as it
+stands to make the choice, but they can't know what the other players have
+chosen during the current round.
 
-Each can plan to "tell" a command, "resign" which ends the game, or "ask" a
-question which the other player has to answer.
+The possible action choices are:
+- issue a command at some time in the future
+- ask a question at some time in the future
+- resign at some time in the future
+- wait for someone else to make a move
 
-Whoever decides the prior time has his move recorded (potentially getting an
-answer to a question in the process). And both players must recalculate their
-plan using the latest history.
-
-The player who lost the race potentially changes his mind about what to do next.
-
-Players can tie, and both actions are recorded.
-
-Given a (computable, total) strategy for choosing your next moves and a way to
-answer questions, and these rules, this generates a stream of moves that may
-not terminate. The system is turing complete because you can implement a
-universal turing machine as one of the players.
-
-The idea is that each player acts like a freely running concurrent process who
-acts independently of the other, but can be interrupted at any time.
-
-But this is expressed totally in the abstract, the stream can be simulated as
-fast or as slow as you want.
-
-You can use this as a semantics of I/O, if two programs generate the same
-stream in the same environment (other player) you could say they are equivalent
-programs.
 
