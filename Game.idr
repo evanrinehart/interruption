@@ -48,7 +48,7 @@ record Strategy (pl : Type) (w : World pl) (t : Type) where
   pickAction : History w t -> Action {pl} {w} t
   answerQuestion : (p : pl) -> History w t -> (q : Que p) -> Ans p q
 
-||| A type is finite if it is bijective with Fin n for some n
+||| A type is finite if it is bijective with Fin n for some n.
 ||| The player type is necessarily finite so we can compute the minimum time.
 data Finite : Type -> Type where
   MkFinite : {t : Type} -> (n : Nat) -> Iso t (Fin n) -> Finite t
