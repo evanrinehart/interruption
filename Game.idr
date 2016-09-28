@@ -28,15 +28,21 @@ data Move : {w : World pl} -> pl -> Type where
   Tell : (p : pl) -> {w : World pl} -> Cmd p -> Move {w} p
   Ask : (p : pl) -> (p' : pl) -> {w : World pl} -> (q : Que p') -> Ans p' q -> Move {w} p
 
-||| An entry is the move time and a collection of (player, move) pairs
+||| An entry is the move time and a collection of (player, move) pairs.
+|||
+||| Entry w t = (t, p:playerTy ** Move p)
 Entry : {pl : Type} -> World pl -> Type -> Type
 Entry {pl} w t = (t, (p : pl ** Move {pl} {w} p))
 
 ||| A finite prefix of the move list.
+|||
+||| History w t = List (Entry w t)
 History : {pl : Type} -> World pl -> Type -> Type
 History w t = List (Entry w t)
 
 ||| The full move list as a stream of entries.
+|||
+||| Game w t = Stream (Entry w t)
 Game : {pl : Type} -> World pl -> Type -> Type
 Game w t = Stream (Entry w t)
 
