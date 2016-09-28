@@ -52,25 +52,25 @@ implementation [Blackjack] World' Players where
 Deck : Type
 Deck = List Card
 
-||| When you look at the move list, you'll see the game is in a certain state.
-data PlayState : Type where
-  PlayersMove : PlayState
-  TriedToPlayWithoutMinimumBet : (bet : Nat) -> PlayState
-  PlayerReady : Deck -> PlayState
-  Dealing : (step : Fin 4) -> Deck -> PlayState
-  PlayerBlackjacked : (bet : Nat) -> PlayState
-  WantsHit : Deck -> PlayState
-  WantsInvalidPlay : PlayState
-  IWillHit : Deck -> PlayState
-  IWillStand : (myScore : Nat) -> (playerScore : Nat) -> (bet : Nat) -> PlayState
-  PlayerOver21 : PlayState
-  DealerOver21 : PlayState
-  PlayerBusted : PlayState
-  IBusted : (bet : Nat) -> PlayState
+||| When you look at the move list, you'll see the game is in a certain "state".
+data GameView : Type where
+  PlayersMove : GameView
+  TriedToPlayWithoutMinimumBet : (bet : Nat) -> GameView
+  PlayerReady : Deck -> GameView
+  Dealing : (step : Fin 4) -> Deck -> GameView
+  PlayerBlackjacked : (bet : Nat) -> GameView
+  WantsHit : Deck -> GameView
+  WantsInvalidPlay : GameView
+  IWillHit : Deck -> GameView
+  IWillStand : (myScore : Nat) -> (playerScore : Nat) -> (bet : Nat) -> GameView
+  PlayerOver21 : GameView
+  DealerOver21 : GameView
+  PlayerBusted : GameView
+  IBusted : (bet : Nat) -> GameView
 
-||| Fold over a history to get its current state
-stateOf : History Blackjack Nat -> PlayState
-stateOf hist = ?stateAlg
+||| Fold over a history to get its current game view
+gameView : History Blackjack Nat -> GameView
+gameView hist = ?viewAlg
 
 ||| How the dealer works. Player's strategy is up to you!
 dealerStrategy : Strategy Players Blackjack Nat Dealer
@@ -82,7 +82,7 @@ dealerStrategy = MkStrategy decide answer where
   decide history =
     let tmax = maxT history in
     let t = tmax + 1 in
-    case stateOf history of
+    case gameView history of
       PlayersMove                        => Wait
       TriedToPlayWithoutMinimumBet bet   => act t (Complain "minimum $5")
       PlayerReady deck                   => act t (Reshuffle deck)
