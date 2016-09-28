@@ -68,18 +68,17 @@ data PlayState : Type where
   PlayerBusted : PlayState
   IBusted : (bet : Nat) -> PlayState
 
-postulate
-stateOf : History w t -> PlayState
-
-maxT : Ord t => History w t -> t
-maxT _ = ?hmm
-
-act : Nat -> DealerCmd -> Action Dealer Nat
-act t' = TellAt {w=Blackjack} Dealer t'
+||| Fold over a history to get it's current state
+stateOf : History Blackjack Nat -> PlayState
+stateOf hist = ?stateAlg
 
 ||| How the dealer works. Player's strategy is up to you!
 dealerStrategy : Strategy Players Blackjack Nat Dealer
 dealerStrategy = MkStrategy decide answer where
+  act : Nat -> DealerCmd -> Action Dealer Nat
+  act t' = TellAt {w=Blackjack} Dealer t'
+  maxT : History w Nat -> Nat
+  maxT hist = foldr max 0 (map fst hist)
   decide history =
     let tmax = maxT history in
     let t = tmax + 1 in
@@ -92,6 +91,7 @@ dealerStrategy = MkStrategy decide answer where
       Dealing (FS (FS FZ))      (d::eck) => act t (Deal Dealer d FaceDown)
       Dealing (FS (FS (FS FZ))) (d::eck) => act t (Deal Dealer d FaceUp)
       Dealing _                 []       => ResignAt t
+      Dealing (FS (FS (FS (FS FZ)))) _   impossible -- annoying
       PlayerBlackjacked bet              => act t (PayPlayer bet)
       WantsHit (d::eck)                  => act t (Deal Player d FaceUp)
       WantsHit []                        => ResignAt t

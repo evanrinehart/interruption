@@ -80,7 +80,7 @@ finFold {prf=(MkFinite (S n) (MkIso _ from _ _))} f start =
 ||| Given a finite number of players and their strategies, generate the
 ||| stream of moves. May not terminate!
 play : Finite pl -> ((p : pl) -> Strategy pl w t p) -> Game w t
-play prf str = ?haha -- see README
+play prf str = ?playAlg -- see README
 
 --This causes indefinite 100% cpu on type checking, but thats another story
 {-
