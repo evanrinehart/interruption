@@ -60,14 +60,13 @@ data PlayState : Type where
   Dealing : (step : Fin 4) -> Deck -> PlayState
   PlayerBlackjacked : (bet : Nat) -> PlayState
   WantsHit : Deck -> PlayState
-  WantsStand : PlayState
   WantsInvalidPlay : PlayState
   IWillHit : Deck -> PlayState
   IWillStand : (myScore : Nat) -> (playerScore : Nat) -> (bet : Nat) -> PlayState
-  IBusted : (bet : Nat) -> PlayState
   PlayerOver21 : PlayState
   DealerOver21 : PlayState
   PlayerBusted : PlayState
+  IBusted : (bet : Nat) -> PlayState
 
 postulate
 stateOf : History w t -> PlayState
@@ -92,16 +91,19 @@ dealerStrategy = MkStrategy decide answer where
       Dealing (FS FZ)           (d::eck) => act t (Deal Player d FaceUp)
       Dealing (FS (FS FZ))      (d::eck) => act t (Deal Dealer d FaceDown)
       Dealing (FS (FS (FS FZ))) (d::eck) => act t (Deal Dealer d FaceUp)
+      Dealing _                 []       => ResignAt t
       PlayerBlackjacked bet              => act t (PayPlayer bet)
       WantsHit (d::eck)                  => act t (Deal Player d FaceUp)
+      WantsHit []                        => ResignAt t
       WantsInvalidPlay                   => act t (Complain "you can't do that")
       IWillHit (d::eck)                  => act t (Deal Dealer d FaceUp)
+      IWillHit []                        => ResignAt t
       IWillStand dscore pscore bet       => act t $ case compare dscore pscore of
         LT => PayPlayer bet
         EQ => Push
         GT => TakeMoney
       PlayerOver21 => act t BustPlayer
       DealerOver21 => act t BustDealer
-      IBusted bet  => act t (PayPlayer bet)
       PlayerBusted => act t TakeMoney
+      IBusted bet  => act t (PayPlayer bet)
   answer _ WhatTimeIsIt = Nothing
