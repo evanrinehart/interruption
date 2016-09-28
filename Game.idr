@@ -1,86 +1,90 @@
 module Game
 
+import Control.Isomorphism 
+import Data.Fin
+import Data.Vect
+
 %hide World
 %default total
 
-data Player = PlA | PlB
+interface World pl where
+  Cmd : pl -> Type
+  Que : pl -> Type
+  Ans : (p : pl) -> Que p -> Type
 
-record World where
-  constructor MkWorld
-  T : Type
-  C : Player -> Type
-  Q : Player -> Type
-  A : (p : Player) -> Q p -> Type
+implementation [W] World (Fin 3) where
+  Cmd n = Unit
+  Que n = (Nat,Nat)
+  Ans n (i,j) = Char
 
-data Action : Player -> World -> Type where
-  Tell : {w : World} -> {p : Player} -> C w p -> Action p w
-  Ask : {w : World} -> {p : Player} -> Q w p -> Action p w
-  Resign : Action p w
+data Action : {w : World pl} -> Type -> Type where
+  Wait : Action t
+  ResignAt : t -> Action t
+  TellAt   : (p : pl) -> {w : World pl} -> t -> Cmd p -> Action t
+  AskAt    : (p' : pl) -> {w : World pl} -> t -> Que p' -> Action t
 
-data Move : World -> Type where
-  Push : {w : World} -> (p : Player) -> C w p -> Move w
-  Pull : {w : World} -> (p : Player) -> (q : Q w p) -> A w p q -> Move w
-  EndGame : Player -> Move w
+data Move : {w : World pl} -> pl -> Type where
+  Resign : (p : pl) -> Move {w} p
+  Tell : (p : pl) -> {w : World pl} -> Cmd p -> Move {w} p
+  Ask : (p : pl) -> (p' : pl) -> {w : World pl} -> (q : Que p') -> Ans p' q -> Move {w} p
 
-codata FullHistory : World -> Type where
-  FNil : FullHistory w
-  FOne : {w : World} -> T w -> Move w -> FullHistory w -> FullHistory w
-  FTwo : {w : World} -> T w -> Move w -> Move w -> FullHistory w -> FullHistory w
+Entry : {pl : Type} -> World pl -> Type -> Type
+Entry {pl} w t = (t, (p : pl ** Move {pl} {w} p))
 
-data History : World -> Type where
-  Nil : History w
-  One : {w : World} -> T w -> Move w -> History w -> History w
-  Two : {w : World} -> T w -> Move w -> Move w -> History w -> History w
+History : {pl : Type} -> World pl -> Type -> Type
+History w t = List (Entry w t)
 
-record Game (w : World) where
-  constructor MkGame
-  strategyA : History w -> (T w, Action PlA w)
-  strategyB : History w -> (T w, Action PlB w)
-  answersA : History w -> (q : Q w PlB) -> A w PlB q
-  answersB : History w -> (q : Q w PlA) -> A w PlA q
-  
-mutual
-  go : Ord (T w) => Game w -> (T w, Action PlA w) -> (T w, Action PlB w) -> History w -> FullHistory w
-  go g (t1,a1) (t2,a2) h = case compare t1 t2 of
-    LT => make1Move g t1 PlA a1 h
-    EQ => make2Moves g t1 a1 a2 h
-    GT => make1Move g t2 PlB a2 h
+Game : {pl : Type} -> World pl -> Type -> Type
+Game w t = Stream (Entry w t)
 
-  makeMove : Game w -> (p : Player) -> Action p w -> History w -> Move w
-  makeMove g@(MkGame {w} strA strB ansA ansB) p a h = case a of
-    Tell c => Push p c
-    Ask q =>
-      let answer = case p of
-                        PlA => ansB h q
-                        PlB => ansA h q in
-      Pull p q answer
-    Resign => EndGame p
+data Finite : Type -> Type where
+  MkFinite : {t : Type} -> (n : Nat) -> Iso t (Fin n) -> Finite t
 
-  make1Move : Ord (T w) => Game w -> T w -> (p : Player) -> Action p w -> History w -> FullHistory w
-  make1Move g@(MkGame {w} strA strB ansA ansB) t p a h =
-    let m = makeMove g p a h in
-    let h' = One t m h in
-    case m of
-      EndGame _ => FOne t m FNil
-      _ =>
-        let nextA = strA h' in
-        let nextB = strB h' in
-        FOne t m (go g nextA nextB h')
+voidFin : Finite Void
+voidFin = MkFinite {t=Void} 0 (the (Iso Void (Fin 0)) prf) where
+  to : Void -> Fin 0
+  to = void
+  from : Fin 0 -> Void
+  from = FinZElim
+  fromTo : (y : Fin 0) -> to (from y) = y
+  fromTo foo = FinZElim foo
+  toFrom : (x : Void) -> from (to x) = x
+  toFrom foo = void foo
+  prf = MkIso to from fromTo toFrom
 
-  make2Moves : Ord (T w) => Game w -> T w -> Action PlA w -> Action PlB w -> History w -> FullHistory w
-  make2Moves g@(MkGame {w} strA strB ansA ansB) t a1 a2 h =
-    let m1 = makeMove g PlA a1 h in
-    let m2 = makeMove g PlB a2 h in
-    let h' = Two t m1 m2 h in
-    case (m1,m2) of
-      (EndGame _, _) => FTwo t m1 m2 FNil
-      (_, EndGame _) => FTwo t m1 m2 FNil
-      _ =>
-        let nextA = strA h' in
-        let nextB = strB h' in
-        FTwo t m1 m2 (go g nextA nextB h')
+finFin : Finite (Fin n)
+finFin {n} = MkFinite n isoRefl
 
-play : Ord (T w) => Game w -> FullHistory w
-play g = go g (strategyA g Nil) (strategyB g Nil) Nil
+finFold : {prf : Finite t} -> (t -> acc -> acc) -> acc -> acc
+finFold {prf=(MkFinite Z     (MkIso _ from _ _))} f start = start
+finFold {prf=(MkFinite (S n) (MkIso _ from _ _))} f start =
+  let elements = map from (range {n=S n}) in
+  foldr f start elements
 
+record Strategy (pl : Type) (w : World pl) (t : Type) where
+  constructor MkStrategy
+  pickAction : History w t -> Action {pl} {w} t
+  answerQuestion : (p : pl) -> History w t -> (q : Que p) -> Ans p q
 
+play : Finite pl -> Strategy pl w t -> Game w t
+play prf str = ?haha
+
+{-
+how to play. ask all players for an action. Ignore any "wait" actions. the rest
+of the actions contain a timestamp. calculate the minimum, then take the
+non-empty set of actions which equal that minimum. all such actions translate
+into an element in the next entry, tells and resigns translate directly, and
+asks must be answered by the appropriate player. if any of the winning actions
+was "resign" then the game ends. otherwise play repeats by asking all players
+for another action, including any players who lost the race (they might now
+change their minds because of the new entry in the move list).
+
+a chosen time must be greater than the greatest time in the move list.
+-}
+
+--This causes indefinite 100% cpu on type checking, but thats another story
+{-
+data OrdList : (t : Type) -> {rel : t -> t -> Type} -> t -> Type where
+  Cell : (x : t) -> OrdList t x
+  Cons : {rel : t -> t -> Type} -> (y : t) -> OrdList t x -> x `rel` y -> OrdList t y
+-}
