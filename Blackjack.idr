@@ -29,9 +29,6 @@ data Face = FaceUp | FaceDown
 ||| unless there are bugs.
 data DealerCmd : Type where
   Deal : Players -> Card -> Face -> DealerCmd
-  HitDealer : Card -> DealerCmd
-  HitPlayer : Card -> DealerCmd
-  StandDealer : DealerCmd
   BustDealer : DealerCmd
   BustPlayer : DealerCmd
   Push : DealerCmd
@@ -81,7 +78,7 @@ maxT _ = ?hmm
 act : Nat -> DealerCmd -> Action Dealer Nat
 act t' = TellAt {w=Blackjack} Dealer t'
 
-||| How the dealer works.
+||| How the dealer works. Player's strategy is up to you!
 dealerStrategy : Strategy Players Blackjack Nat Dealer
 dealerStrategy = MkStrategy decide answer where
   decide history =
@@ -99,11 +96,10 @@ dealerStrategy = MkStrategy decide answer where
       WantsHit (d::eck)                  => act t (Deal Player d FaceUp)
       WantsInvalidPlay                   => act t (Complain "you can't do that")
       IWillHit (d::eck)                  => act t (Deal Dealer d FaceUp)
-      IWillStand dscore pscore bet       => act t
-        (case compare dscore pscore of
-          LT => PayPlayer bet
-          EQ => Push
-          GT => TakeMoney)
+      IWillStand dscore pscore bet       => act t $ case compare dscore pscore of
+        LT => PayPlayer bet
+        EQ => Push
+        GT => TakeMoney
       PlayerOver21 => act t BustPlayer
       DealerOver21 => act t BustDealer
       IBusted bet  => act t (PayPlayer bet)
