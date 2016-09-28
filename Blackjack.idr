@@ -68,7 +68,7 @@ data PlayState : Type where
   PlayerBusted : PlayState
   IBusted : (bet : Nat) -> PlayState
 
-||| Fold over a history to get it's current state
+||| Fold over a history to get its current state
 stateOf : History Blackjack Nat -> PlayState
 stateOf hist = ?stateAlg
 
