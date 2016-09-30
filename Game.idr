@@ -44,10 +44,9 @@ History : {pl : Type} -> World' pl -> Type -> Type
 History w t = List (Entry w t)
 
 ||| The full move list as a stream of entries.
-|||
-||| Game w t = Stream (Entry w t)
-Game : {pl : Type} -> World' pl -> Type -> Type
-Game w t = Stream (Entry w t)
+codata Game : {pl : Type} -> World' pl -> Type -> Type where
+  Nil  : Game w t
+  (::) : Entry w t -> Game w t -> Game w t
 
 ||| A computer player consists of a (pure, total) function to pick actions
 ||| and to answer questions if necessary. Because of the rules, this game is
