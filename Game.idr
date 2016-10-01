@@ -54,7 +54,7 @@ codata Game : {pl : Type} -> World' pl -> Type -> Type where
 public export record Strategy (pl : Type) (w : World' pl) (t : Type) (p : pl) where
   constructor MkStrategy
   pickAction : History w t -> Action {pl} {w} p t
-  answerQuestion : History w t -> (q : Que p) -> Ans p q
+  answerQuestion : History w t -> t -> (q : Que p) -> Ans p q
 
 ||| A type is finite if it is bijective with Fin n for some n.
 ||| The player type is necessarily finite so we can compute the minimum time.

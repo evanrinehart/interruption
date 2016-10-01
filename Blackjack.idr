@@ -106,4 +106,4 @@ dealerStrategy = MkStrategy decide answer where
       DealerOver21 => act t BustDealer
       PlayerBusted => act t TakeMoney
       IBusted bet  => act t (PayPlayer bet)
-  answer _ WhatTimeIsIt = Nothing
+  answer _ t WhatTimeIsIt = Nothing
