@@ -76,6 +76,10 @@ finFold {prf=(MkFinite (S n) (MkIso _ from _ _))} f start =
   let elements = map from (range {n=S n}) in
   foldr f start elements
 
+||| Apply a function to all values of a finite type
+finMap : {prf : Finite t} -> (t -> u) -> List u
+finMap {prf} f = finFold {prf} ((::) . f) []
+
 ||| Given a finite number of players and their strategies, generate the
 ||| stream of moves. May not terminate!
 play : Finite pl -> ((p : pl) -> Strategy pl w t p) -> Game w t
